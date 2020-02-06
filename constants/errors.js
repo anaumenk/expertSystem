@@ -1,0 +1,11 @@
+module.exports.NO_FILE = "File not exist:";
+module.exports.USAGE = "Usage: node index.js filename";
+module.exports.NO_FACTS = "No facts found!";
+module.exports.NO_QUERIES = "No queries found!";
+module.exports.NO_RULES = "No rules found!";
+module.exports.ONE_FACT = "Just one fact needed!";
+module.exports.ONE_QUERY = "Just one query needed!";
+module.exports.QUERY_NO_FIND_IN_RULES = "no find in rules";
+module.exports.WRONG_CHARS = "Use only uppercase alphabetical character";
+module.exports.WRONG_CHARS_NUMBER = "Don't use multiple letters side by side";
+module.exports.WRONG_RULE_STRUCTURE = "Wrong rule structure";

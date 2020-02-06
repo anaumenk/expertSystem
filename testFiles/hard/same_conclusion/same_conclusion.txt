@@ -1,0 +1,7 @@
+#Output: A = true
+
+B => A
+C => A
+
+=C
+?A

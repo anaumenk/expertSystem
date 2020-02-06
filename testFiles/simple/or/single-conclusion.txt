@@ -1,0 +1,4 @@
+# Output: C = true
+A | B => C
+=A
+?C
