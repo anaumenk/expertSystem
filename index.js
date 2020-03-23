@@ -8,6 +8,8 @@ if (argv.length !== 3) {
   utility.showErrorMessage(constants.USAGE);
 }
 
+
+
 const filename = argv[2];
 
 if (fs.existsSync(filename)) {
