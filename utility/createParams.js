@@ -7,7 +7,8 @@ const createParams = (file) => {
   let rules = [];
 
   file.forEach((line) => {
-    line = line.replace(/#.+($|\n)/g, "").trim();
+    line = line.replace(/\s|#.+($|\n)/g, "");
+
     if (line[0]) {
       if (line[0] === "=") {
         if (facts.length === 0) {

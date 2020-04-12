@@ -13,7 +13,33 @@ const filename = argv[2];
 if (fs.existsSync(filename)) {
   const file = fs.readFileSync(filename).toString().split("\n");
   const params = utility.validateParams(utility.createParams(file));
+
   const researchRules = utility.researchRules(params.rules);
+  // {type of the equation (
+  // implies =>,
+  // and +,
+  // or |,
+  // not !,
+  // xor ^,
+  // if and only if <=>,
+  // single symbol
+  // ), left, right}
+
+  // all bool variants for all single symbols in equation A => B [{A: true, B: true}, {A: true, B: false}, {A: false, B: true}, {A: false, B: false}]
+
+  //   пройтись по researchRules all bool variants
+  // учитывая операторы
+  // var operations = {
+  //   not: function(x) { return !x; },
+  //   and: function(x, y) { return x && y; },
+  //   or:  function(x, y) { return x || y; },
+  //   xor: function(x, y) { return (x || y) && !(x && y); },
+  //   imply: function(x, y) { return !x || y; },
+  //   iff: function(x, y) { return x === y; },
+  //   single: function(x) { return x;}
+  // };
+
+  // учесть все данные факты, убрать те что не подходят
 } else {
   utility.showErrorMessage(`${constants.NO_FILE} ${filename}`);
 }
