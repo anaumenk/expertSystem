@@ -1,4 +1,4 @@
-const TYPES = {
+const OPERAND = {
     IMPLIES: "=>",
     AND: "+",
     OR: "|",
@@ -8,4 +8,4 @@ const TYPES = {
     SINGLE: "SINGLE"
 };
 
-module.exports.TYPES = TYPES;
+module.exports = OPERAND;

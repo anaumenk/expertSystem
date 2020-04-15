@@ -1,0 +1,17 @@
+#A resolved as True
+#F resolved as True
+#K resolved as True
+#P resolved as True
+
+B => A
+D + E => B
+G + H => F
+I + J => G
+G => H
+L + M => K
+O + P => L + N
+N => M
+
+=DEIJOP
+
+?AFKP
