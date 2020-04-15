@@ -4,7 +4,7 @@ const isOneResult = (possible, last, rules) => {
   if (possible.length > 0) {
     let result = checkByRules(possible, rules);
     if (!result || result.length !== 1) {
-      result = [isOneResult(last, [], rules)]
+      result = last.length === 0 ? possible : [isOneResult(last, [], rules)];
     }
     return result[0];
   } else {
@@ -17,7 +17,11 @@ const resolveRules = (rules, variant) => {
     rule = setBool(JSON.parse(JSON.stringify(rule)), variant);
     return (function __resolveRules(rule) {
       if (rule.type !== OPERAND.SINGLE) {
-        if (rule.left.type === OPERAND.SINGLE && rule.right.type === OPERAND.SINGLE) {
+        if (OPERAND[rule.type] === OPERAND.NOT) {
+          rule.left = !rule.left.left;
+          rule.type = OPERAND.SINGLE;
+          rule.right = undefined;
+        } else if (rule.left.type === OPERAND.SINGLE && rule.right.type === OPERAND.SINGLE) {
           rule.left = OPERATIONS[rule.type](rule.left.left, rule.right.left);
           rule.type = OPERAND.SINGLE;
           rule.right = undefined;
@@ -80,14 +84,21 @@ const GenerateBool = (AtomNode) => {
 };
 
 const breakRule = (rule, letters) => {
-  const match = rule
-      .match(`${OPERAND.IMPLIES}|${OPERAND.IIF}|\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.NOT}|\\${OPERAND.XOR}`);
+  let match = rule.match(`${OPERAND.IMPLIES}|${OPERAND.IIF}`);
+  if (!match) {
+    match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|\\${OPERAND.NOT}`);
+  }
   let type,left,right = undefined;
   if (match) {
     type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
-    rule = rule.replace(OPERAND[type], '\x01').split('\x01');
-    left = breakRule(rule[0], letters);
-    right = breakRule(rule[1], letters);
+    if (match[0] === OPERAND.NOT) {
+      rule = rule.replace(OPERAND[type], '\x01');
+      left = breakRule(rule[1], letters);
+    } else {
+      rule = rule.replace(OPERAND[type], '\x01').split('\x01');
+      left = breakRule(rule[0], letters);
+      right = breakRule(rule[1], letters);
+    }
   } else {
     type = OPERAND.SINGLE;
     left = rule;
@@ -109,7 +120,6 @@ const findSolution = (params) => {
   let bool = GenerateBool(AtomNode)
       .filter((item) => params.facts.every((fact) => item[fact] || item[fact] === undefined));
   const possible = defaultFalse(bool, params.facts, params.queries);
-
   return isOneResult(possible,
       bool.filter((value) => value !== possible.find((obj) => obj === value)), params.rules);
 };
