@@ -1,17 +1,5 @@
 const {OPERAND, OPERATIONS} = require("../constants");
 
-// const isOneResult = (possible, last, rules) => {
-//   if (possible.length > 0) {
-//     let result = checkByRules(possible, rules);
-//     if (!result || result.length !== 1) {
-//       result = last.length === 0 ? possible : [isOneResult(last, [], rules)];
-//     }
-//     return result[0];
-//   } else {
-//     return {}
-//   }
-// };
-
 const resolveRules = (rules, variant) => {
   return rules.every((rule) => {
     rule = setBool(JSON.parse(JSON.stringify(rule)), variant);
@@ -58,18 +46,16 @@ const checkByRules = (variants, rules) => {
   return possibleResult;
 };
 
-// const defaultFalse = (bool, facts, queries) => {
-//   const res = [];
-//   bool.forEach((variant) => {
-//     Object.keys(variant).forEach((atom) => {
-//       if (!facts.find((fact) => fact === atom)
-//           && !queries.find((query) => query === atom) && !variant[atom]) {
-//         res.push(variant)
-//       }
-//     })
-//   });
-//   return res;
-// };
+const defaultFalse = (variants, facts, queries) => {
+  const res = [];
+  variants.forEach((variant) => {
+   if (Object.keys(variant).every((atom) => !variant[atom]
+       && !facts.find((fact) => fact === atom))) {
+     res.push(variant)
+   }
+  });
+  return res;
+};
 
 const GenerateBool = (AtomNode) => {
   const res = [];
@@ -123,10 +109,13 @@ const findSolution = (params) => {
   if (passedTheRules.length === 1) {
     return  passedTheRules[0];
   }
-  // const possible = defaultFalse(bool, params.facts, params.queries);
-  // const res = isOneResult(possible,
-  //     bool.filter((value) => value !== possible.find((obj) => obj === value)), params.rules);
-  return {};
+  // only for all false not fact values, fix or del anyway
+  const possible = defaultFalse(passedTheRules, params.facts, params.queries);
+  if (possible.length === 1) {
+    return  possible[0];
+  }
+  //
+  return passedTheRules.length > 0 ? passedTheRules[0] : {};
 };
 
 module.exports = findSolution;
