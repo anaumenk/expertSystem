@@ -2,13 +2,12 @@ const colors = require("colors/safe");
 
 const printResults = (queries, solution) => {
     queries.forEach((query) => {
-        const answer = solution[query]
-            // || "undetermined";
+        const answer = solution[query];
         console.log(`${query} = ${answer 
             ? colors.green(answer) 
-            : !answer 
-                ? colors.red(answer)
-                : colors.yellow(answer)
+            : answer === undefined
+                ? colors.yellow("undetermined")
+                : colors.red(answer)
         }`);
     })
 };
