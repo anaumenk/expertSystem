@@ -7,5 +7,7 @@ module.exports.ONE_FACT = "Just one fact needed!";
 module.exports.ONE_QUERY = "Just one query needed!";
 module.exports.QUERY_NO_FIND_IN_RULES = "no find in rules";
 module.exports.WRONG_CHARS = "Use only uppercase alphabetical character";
+module.exports.WRONG_CHARS_IN_QUERIES = "Wrong char in queries";
+module.exports.WRONG_CHARS_IN_FACTS = "Wrong char in facts";
 module.exports.WRONG_CHARS_NUMBER = "Don't use multiple letters side by side";
 module.exports.WRONG_RULE_STRUCTURE = "Wrong rule structure";

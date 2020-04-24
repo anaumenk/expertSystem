@@ -12,7 +12,7 @@ const filename = argv[2];
 
 if (fs.existsSync(filename)) {
   const file = fs.readFileSync(filename).toString().split("\n");
-  const params = utility.validateParams(utility.createParams(file));
+  const params = utility.validation.validateParams(utility.createParams(file));
   const solution = utility.findSolution(params);
   utility.printResults(params.queries, solution);
 } else {

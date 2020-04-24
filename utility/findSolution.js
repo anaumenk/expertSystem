@@ -1,7 +1,8 @@
-const {OPERAND, OPERATIONS} = require("../constants");
+const {OPERAND, OPERATIONS, UNSENT_INT, WRONG_RULE_STRUCTURE} = require("../constants");
+const {validation, showErrorMessage} = require("./index");
 
 const resolveRules = (rules, variant) => {
-  return rules.every((rule) => {
+  rules = rules.map((rule) => {
     rule = setBool(JSON.parse(JSON.stringify(rule)), variant);
     return (function __resolveRules(rule) {
       if (rule.type !== OPERAND.SINGLE) {
@@ -22,12 +23,13 @@ const resolveRules = (rules, variant) => {
       return rule;
     })(rule).left;
   });
+  return rules.findIndex((rule) => !rule);
 };
 
 const setBool = (rule, variant) => {
   if (rule) {
     if (rule.type === OPERAND.SINGLE) {
-      rule.left = variant[rule.left];
+      rule.left = variant.find((fact) => fact.fact === rule.left).value;
     } else {
       rule.right = setBool(rule.right, variant);
       rule.left = setBool(rule.left, variant);
@@ -36,46 +38,92 @@ const setBool = (rule, variant) => {
   return rule;
 };
 
-const checkByRules = (variants, rules) => {
-  const possibleResult = [];
-  variants.forEach((variant) => {
-    if (resolveRules(rules, variant)) {
-      possibleResult.push(variant);
+const findFactToChange = (equation, facts) => {
+  let factToChange = [];
+  (function __findFactToChange(equation) {
+    if (equation) {
+      if (equation.type === OPERAND.SINGLE && !facts[facts.findIndex((fact) => fact.fact === equation.left)].value) {
+        factToChange.push(equation.left);
+      } else {
+        equation.left = __findFactToChange(equation.left);
+        equation.right = __findFactToChange(equation.right);
+      }
     }
-  });
-  return possibleResult;
+    return equation;
+  }(equation));
+  return factToChange.length > 0 ? factToChange[factToChange.length - 1] : null;
 };
 
-const defaultFalse = (variants, facts, queries) => {
-  const res = [];
-  variants.forEach((variant) => {
-   if (Object.keys(variant).every((atom) => !variant[atom]
-       && !facts.find((fact) => fact === atom))) {
-     res.push(variant)
-   }
-  });
-  return res;
-};
-
-const GenerateBool = (AtomNode) => {
-  const res = [];
-  for (let i = 0; i < (1 << AtomNode.length); i++) {
-    const boolArr = {};
-    for (let j = 0; j < AtomNode.length; j++) {
-      boolArr[AtomNode[j]] = Boolean(i & (1 << j));
-    }
-    res.push(boolArr)
+const considerOptions = (rules, facts) => {
+  let res = resolveRules(rules, facts);
+  while (res !== UNSENT_INT) {
+    const factToChange = findFactToChange(rules[res].right, facts);
+    facts = facts.map((fact) => {
+      if (fact.fact === factToChange && fact.changeable) {
+        fact.value = !fact.value;
+      }
+      return fact
+    });
+    res = resolveRules(rules, facts);
   }
-  return res;
+  return facts;
+};
+
+const createFacts = (facts, rules) => {
+  const allFacts = facts.map((fact) => ({fact, value: true, changeable: false}));
+  rules.forEach((rule) => {
+    (function __createFacts(rule) {
+      if (rule) {
+        if (rule.type === OPERAND.SINGLE && !allFacts.find((fact) => fact.fact === rule.left)) {
+          allFacts.push({fact: rule.left, value: false, changeable: true})
+        }
+        rule.left = __createFacts(rule.left);
+        rule.right = __createFacts(rule.right);
+      }
+      return rule;
+    })(rule);
+  });
+  return allFacts;
+};
+
+const closeBracketIndex = (rule) => {
+  let brackets = 0;
+  for (let i = 0; i < rule.length; i++) {
+    if (rule[i] === '(') {
+      brackets++;
+    }
+    if (rule[i] === ')') {
+      brackets--;
+    }
+    if (brackets === 0) {
+      return i + 1;
+    }
+  }
+  return UNSENT_INT;
 };
 
 const breakRule = (rule, letters) => {
-  let match = rule.match(`${OPERAND.IMPLIES}|${OPERAND.IIF}`);
-  if (!match) {
-    match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|\\${OPERAND.NOT}`);
-  }
+  let match = rule.match(`${OPERAND.IMPLIES}|${OPERAND.IIF}`)
+      || rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|\\${OPERAND.NOT}|[()]`);
   let type,left,right = undefined;
-  if (match) {
+
+  if (match && match[0] === '(') {
+    if (!validation.validateParenthesis(rule)) {
+      showErrorMessage(WRONG_RULE_STRUCTURE)
+    }
+    const innerRule = rule.slice(0, closeBracketIndex(rule) + 1);
+    rule = innerRule.length === rule.length ? innerRule.slice(1, -1) : rule.replace(innerRule, "");
+    match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|\\${OPERAND.NOT}`);
+    if (match) {
+      type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
+      rule = rule.replace(OPERAND[type], '\x01').split('\x01');
+      left = breakRule(rule[0], letters);
+      right = breakRule(rule[1], letters);
+    } else {
+      type = OPERAND.SINGLE;
+      left = rule;
+    }
+  } else if (match) {
     type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
     if (match[0] === OPERAND.NOT) {
       rule = rule.replace(OPERAND[type], '\x01');
@@ -103,19 +151,7 @@ const breakRule = (rule, letters) => {
 const findSolution = (params) => {
   const AtomNode = [];
   params.rules = params.rules.map((rule) => breakRule(rule, AtomNode));
-  let bool = GenerateBool(AtomNode)
-      .filter((item) => params.facts.every((fact) => item[fact] || item[fact] === undefined));
-  const passedTheRules = checkByRules(bool, params.rules);
-  if (passedTheRules.length === 1) {
-    return  passedTheRules[0];
-  }
-  // only for all false not fact values, fix or del anyway
-  const possible = defaultFalse(passedTheRules, params.facts, params.queries);
-  if (possible.length === 1) {
-    return  possible[0];
-  }
-  //
-  return passedTheRules.length > 0 ? passedTheRules[0] : {};
+  return considerOptions(params.rules, createFacts(params.facts, params.rules));
 };
 
 module.exports = findSolution;
