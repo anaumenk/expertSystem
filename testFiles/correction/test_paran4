@@ -1,0 +1,8 @@
+#E = false
+
+A | B + C => E
+(F | G) + H => E 
+
+=C
+
+?E

@@ -1,4 +1,4 @@
-# Output: A = true
+# Output: A = false
 A ^ B => C
 =B
 ?A

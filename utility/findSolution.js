@@ -95,13 +95,13 @@ const breakRule = (rule, letters, facts) => {
     if (!validation.validateParenthesis(rule)) {
       showErrorMessage(WRONG_RULE_STRUCTURE)
     }
-    const innerRule = rule.slice(0, closeBracketIndex(rule) + 1);
+    const innerRule = rule.slice(0, closeBracketIndex(rule));
     rule = innerRule.length === rule.length ? innerRule.slice(1, -1) : rule.replace(innerRule, "");
-    match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|\\${OPERAND.NOT}`);
+    match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}`) || rule.match(`\\${OPERAND.NOT}`);
     if (match) {
       type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
       rule = rule.replace(OPERAND[type], '\x01').split('\x01');
-      left = breakRule(rule[0], letters, facts);
+      left = breakRule(innerRule.slice(1, -1), letters, facts);
       right = breakRule(rule[1], letters, facts);
     } else {
       type = OPERAND.SINGLE;
@@ -120,14 +120,14 @@ const breakRule = (rule, letters, facts) => {
   } else {
     type = OPERAND.SINGLE;
     left = rule;
-    if (letters.length === 0 || !letters.find((item) => item.fact === rule)) {
-      const isTrue = !!facts.find((fact) => fact === rule);
-      letters.push({
-        fact: rule,
-        value: isTrue,
-        changeable: !isTrue
-      });
-    }
+  }
+  if (rule.length === 1 && (letters.length === 0 || !letters.find((item) => item.fact === rule))) {
+    const isTrue = !!facts.find((fact) => fact === rule);
+    letters.push({
+      fact: rule,
+      value: isTrue,
+      changeable: !isTrue
+    });
   }
   return {
     type,

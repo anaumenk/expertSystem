@@ -1,8 +1,7 @@
-#A resolved as True
-#F resolved as True
-#K resolved as False
-#P resolved as True
-
+#A = true
+#F = true
+#K = false
+#P = true
 
 B => A
 D + E => B 
