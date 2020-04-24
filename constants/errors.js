@@ -11,3 +11,4 @@ module.exports.WRONG_CHARS_IN_QUERIES = "Wrong char in queries";
 module.exports.WRONG_CHARS_IN_FACTS = "Wrong char in facts";
 module.exports.WRONG_CHARS_NUMBER = "Don't use multiple letters side by side";
 module.exports.WRONG_RULE_STRUCTURE = "Wrong rule structure";
+module.exports.NOT_A_FILE = "not a file";

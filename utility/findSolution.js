@@ -57,7 +57,7 @@ const findFactToChange = (equation, facts) => {
 const considerOptions = (rules, facts) => {
   let res = resolveRules(rules, facts);
   while (res !== UNSENT_INT) {
-    const factToChange = findFactToChange(rules[res].right, facts);
+    const factToChange = findFactToChange(rules[res].right, facts) || findFactToChange(rules[res].left, facts);
     facts = facts.map((fact) => {
       if (fact.fact === factToChange && fact.changeable) {
         fact.value = !fact.value;
@@ -67,23 +67,6 @@ const considerOptions = (rules, facts) => {
     res = resolveRules(rules, facts);
   }
   return facts;
-};
-
-const createFacts = (facts, rules) => {
-  const allFacts = facts.map((fact) => ({fact, value: true, changeable: false}));
-  rules.forEach((rule) => {
-    (function __createFacts(rule) {
-      if (rule) {
-        if (rule.type === OPERAND.SINGLE && !allFacts.find((fact) => fact.fact === rule.left)) {
-          allFacts.push({fact: rule.left, value: false, changeable: true})
-        }
-        rule.left = __createFacts(rule.left);
-        rule.right = __createFacts(rule.right);
-      }
-      return rule;
-    })(rule);
-  });
-  return allFacts;
 };
 
 const closeBracketIndex = (rule) => {
@@ -102,9 +85,10 @@ const closeBracketIndex = (rule) => {
   return UNSENT_INT;
 };
 
-const breakRule = (rule, letters) => {
+const breakRule = (rule, letters, facts) => {
   let match = rule.match(`${OPERAND.IMPLIES}|${OPERAND.IIF}`)
-      || rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|\\${OPERAND.NOT}|[()]`);
+      || rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|[()]`)
+      || rule.match(`\\${OPERAND.NOT}`);
   let type,left,right = undefined;
 
   if (match && match[0] === '(') {
@@ -117,8 +101,8 @@ const breakRule = (rule, letters) => {
     if (match) {
       type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
       rule = rule.replace(OPERAND[type], '\x01').split('\x01');
-      left = breakRule(rule[0], letters);
-      right = breakRule(rule[1], letters);
+      left = breakRule(rule[0], letters, facts);
+      right = breakRule(rule[1], letters, facts);
     } else {
       type = OPERAND.SINGLE;
       left = rule;
@@ -127,19 +111,23 @@ const breakRule = (rule, letters) => {
     type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
     if (match[0] === OPERAND.NOT) {
       rule = rule.replace(OPERAND[type], '\x01');
-      left = breakRule(rule[1], letters);
+      left = breakRule(rule[1], letters, facts);
     } else {
       rule = rule.replace(OPERAND[type], '\x01').split('\x01');
-      left = breakRule(rule[0], letters);
-      right = breakRule(rule[1], letters);
+      left = breakRule(rule[0], letters, facts);
+      right = breakRule(rule[1], letters, facts);
     }
   } else {
     type = OPERAND.SINGLE;
     left = rule;
-    if (letters.length === 0 || !letters.find((item) => item === rule)) {
-      letters.push(rule);
+    if (letters.length === 0 || !letters.find((item) => item.fact === rule)) {
+      const isTrue = !!facts.find((fact) => fact === rule);
+      letters.push({
+        fact: rule,
+        value: isTrue,
+        changeable: !isTrue
+      });
     }
-
   }
   return {
     type,
@@ -150,8 +138,8 @@ const breakRule = (rule, letters) => {
 
 const findSolution = (params) => {
   const AtomNode = [];
-  params.rules = params.rules.map((rule) => breakRule(rule, AtomNode));
-  return considerOptions(params.rules, createFacts(params.facts, params.rules));
+  params.rules = params.rules.map((rule) => breakRule(rule, AtomNode, params.facts));
+  return considerOptions(params.rules, AtomNode);
 };
 
 module.exports = findSolution;

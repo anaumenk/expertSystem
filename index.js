@@ -9,6 +9,11 @@ if (argv.length !== 3) {
 }
 
 const filename = argv[2];
+const fileStats = fs.lstatSync(filename);
+
+if (!fileStats.isFile()) {
+  utility.showErrorMessage(`${filename} ${constants.NOT_A_FILE}`);
+}
 
 if (fs.existsSync(filename)) {
   const file = fs.readFileSync(filename).toString().split("\n");
