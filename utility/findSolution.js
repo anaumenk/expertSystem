@@ -85,6 +85,31 @@ const closeBracketIndex = (rule) => {
   return UNSENT_INT;
 };
 
+const parExp = (rule, letters, facts) => {
+  let type,left,right = undefined;
+
+  const innerRule = rule.slice(0, closeBracketIndex(rule));
+  rule = innerRule.length === rule.length ? innerRule.slice(1, -1) : rule.replace(innerRule, "");
+  const match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|[()]`) || rule.match(`\\${OPERAND.NOT}`);
+  if (match && match[0] === '(') {
+    [type,left,right] = parExp(rule, letters, facts);
+  }
+  else if (match) {
+    type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
+    rule = rule.replace(OPERAND[type], '\x01').split('\x01');
+    left = breakRule(innerRule.slice(1, -1), letters, facts);
+    right = breakRule(rule[1], letters, facts);
+  } else {
+    type = OPERAND.SINGLE;
+    left = rule;
+  }
+  return [
+    type,
+    left,
+    right,
+  ]
+};
+
 const breakRule = (rule, letters, facts) => {
   let match = rule.match(`${OPERAND.IMPLIES}|${OPERAND.IIF}`)
       || rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}|[()]`)
@@ -95,18 +120,7 @@ const breakRule = (rule, letters, facts) => {
     if (!validation.validateParenthesis(rule)) {
       showErrorMessage(WRONG_RULE_STRUCTURE)
     }
-    const innerRule = rule.slice(0, closeBracketIndex(rule));
-    rule = innerRule.length === rule.length ? innerRule.slice(1, -1) : rule.replace(innerRule, "");
-    match = rule.match(`\\${OPERAND.AND}|\\${OPERAND.OR}|\\${OPERAND.XOR}`) || rule.match(`\\${OPERAND.NOT}`);
-    if (match) {
-      type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
-      rule = rule.replace(OPERAND[type], '\x01').split('\x01');
-      left = breakRule(innerRule.slice(1, -1), letters, facts);
-      right = breakRule(rule[1], letters, facts);
-    } else {
-      type = OPERAND.SINGLE;
-      left = rule;
-    }
+    [type,left,right] = parExp(rule, letters, facts);
   } else if (match) {
     type = Object.keys(OPERAND).find(key => OPERAND[key] === match[0]);
     if (match[0] === OPERAND.NOT) {
