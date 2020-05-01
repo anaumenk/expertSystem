@@ -1,4 +1,3 @@
-
 const validateParenthesis = (rule) => {
     let holder = [];
     let openBrackets = ['('];
