@@ -37,7 +37,7 @@ const validateParams = ({facts, queries, rules}) => {
       console.log("AAAAAAAAAA-> ", validateParenthesis);
       
       
-      if (/^[A-Z()!\+\|\^\ ]+(=>|<=>)[A-Z()!\+\|\^\ ]+$/.test(rule) && validateParenthesis.validateParenthesis(rule)) {
+      if (/^[A-Z()!\+\|\^\ ]+(=>|<=>)[A-Z()!\+\|\^\ ]+$/.test(rule) && validateParenthesis(rule)) {
         rule.split(/[\s<=>|\+\^]+/).forEach((char) => {
           if (char.length > 1 && !char.match(/[!()]+/)) {
             showErrorMessage(WRONG_CHARS_NUMBER);

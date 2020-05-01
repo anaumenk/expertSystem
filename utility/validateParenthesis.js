@@ -19,4 +19,4 @@ const validateParenthesis = (rule) => {
     return (holder.length === 0);
   };
 
-module.exports.validateParenthesis = validateParenthesis;
+module.exports = validateParenthesis;

@@ -117,7 +117,7 @@ const breakRule = (rule, letters, facts) => {
   let type,left,right = undefined;
 
   if (match && match[0] === '(') {
-    if (!validateParenthesis.validateParenthesis(rule)) {
+    if (!validateParenthesis(rule)) {
       showErrorMessage(WRONG_RULE_STRUCTURE)
     }
     [type,left,right] = parExp(rule, letters, facts);
