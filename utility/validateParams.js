@@ -1,10 +1,9 @@
-const utility = require("../utility");
-
 const {
   NO_FACTS, NO_QUERIES, NO_RULES, UNSENT_INT, WRONG_RULE_STRUCTURE,
   QUERY_NO_FIND_IN_RULES, WRONG_CHARS, WRONG_CHARS_NUMBER, WRONG_CHARS_IN_FACTS, WRONG_CHARS_IN_QUERIES
 } = require("../constants");
-const { showErrorMessage } = require("./index");
+
+const { showErrorMessage, validateParenthesis } = require("./index");
 
 const validateChars = (char) => /[A-Z]/.test(char);
 
@@ -35,10 +34,10 @@ const validateParams = ({facts, queries, rules}) => {
     showErrorMessage(NO_RULES)
   } else {
     rules.forEach((rule) => {
-      console.log("AAAAAAAAAA-> ", utility);
+      console.log("AAAAAAAAAA-> ", validateParenthesis);
       
       
-      if (/^[A-Z()!\+\|\^\ ]+(=>|<=>)[A-Z()!\+\|\^\ ]+$/.test(rule) && utility.validateParenthesis.validateParenthesis(rule)) {
+      if (/^[A-Z()!\+\|\^\ ]+(=>|<=>)[A-Z()!\+\|\^\ ]+$/.test(rule) && validateParenthesis.validateParenthesis(rule)) {
         rule.split(/[\s<=>|\+\^]+/).forEach((char) => {
           if (char.length > 1 && !char.match(/[!()]+/)) {
             showErrorMessage(WRONG_CHARS_NUMBER);
