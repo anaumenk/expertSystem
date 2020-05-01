@@ -1,5 +1,5 @@
-const { ONE_FACT, ONE_QUERY } = require("../constants");
-const {showErrorMessage} = require("./index");
+const { ONE_FACT, ONE_QUERY } = require("../../constants");
+const { showErrorMessage } = require("./index");
 
 const createParams = (file) => {
   let facts = [];

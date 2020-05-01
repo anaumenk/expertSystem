@@ -21,6 +21,6 @@ if (!fileStats.isFile()) {
 }
 
 const file = fs.readFileSync(filename).toString().split("\n");
-const params = utility.validateParams.validateParams(utility.createParams(file));
+const params = utility.validation.validateParams(utility.validation.createParams(file));
 const solution = utility.findSolution(params);
 utility.printResults(params.queries, solution);

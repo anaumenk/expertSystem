@@ -1,5 +1,6 @@
 const {OPERAND, OPERATIONS, UNSENT_INT, WRONG_RULE_STRUCTURE} = require("../constants");
-const {validateParenthesis, showErrorMessage} = require("./index");
+const {validateParenthesis} = require("./validation");
+const {showErrorMessage} = require("./index");
 
 const resolveRules = (rules, variant) => {
   rules = rules.map((rule) => {
