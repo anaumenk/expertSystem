@@ -1,5 +1,5 @@
 const {OPERAND, OPERATIONS, UNSENT_INT, WRONG_RULE_STRUCTURE} = require("../constants");
-const {validation, showErrorMessage} = require("./index");
+const {validateParenthesis, showErrorMessage} = require("./index");
 
 const resolveRules = (rules, variant) => {
   rules = rules.map((rule) => {
@@ -117,7 +117,7 @@ const breakRule = (rule, letters, facts) => {
   let type,left,right = undefined;
 
   if (match && match[0] === '(') {
-    if (!validation.validateParenthesis(rule)) {
+    if (!validateParenthesis.validateParenthesis(rule)) {
       showErrorMessage(WRONG_RULE_STRUCTURE)
     }
     [type,left,right] = parExp(rule, letters, facts);
